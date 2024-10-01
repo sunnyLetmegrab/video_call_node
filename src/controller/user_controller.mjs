@@ -15,24 +15,42 @@ async function updateExcerCiseStatus(req, res) {
 
 
 async function getMeetingInfo(req, res) {
-  var id = req.params.id;
+  try {
+    var id = req.params.id;
 
-  var meetingCount = await MeetingModel.countDocuments({ _id: id })
+    var meetingCount = await MeetingModel.countDocuments({ _id: id })
+    if (meetingCount > 0) {
+      var response = await MeetingModel.aggregate([{
+        $lookup: {
+          from: 'users',
+          localField: 'participents',
+          foreignField: '_id',
+          as: 'participents'
+        }
+      }, 
+      { $unwind: '$excercise' }, 
+      {
+        $lookup: {
+          from:'excercise',
+          localField:'excercise.excerciseId',
+          foreignField:'id',
+          as :'excercises',
+        }
+      }])
 
-  var response = await MeetingModel.aggregate([{
-    $lookup: {
-      from: 'users',
-      localField: 'participents',
-      foreignField: '_id',
-      as: 'participents'
+      if (response.length > 0) {
+        return res.status(200).send({ message: 'message', data: response[0] })
+      }
+
     }
-  }])
+    return res.status(404).send({ message: 'no meeting found' })
 
-  if (response.length > 0) {
-    return res.status(200).send({ message: 'message', data: response[0] })
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).send({ message: 'error', error: error })
+
   }
-
-
 }
 
 export {
