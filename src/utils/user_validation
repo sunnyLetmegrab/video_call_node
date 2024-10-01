@@ -1,0 +1,41 @@
+import Joi from 'joi';
+
+var loginValidate = Joi.object({
+  password: Joi.string().min(6),
+  email: Joi.string().email(),
+  roles: Joi.string().valid('admin', 'staff')
+})
+
+var addUserValidate = Joi.object({
+  name: Joi.string()
+    .min(2),
+  email: Joi.string().email().optional(),
+  phoneNumber: Joi.string().required(),
+  roles: Joi.string().optional().default('user')
+})
+var addStaffValidate = Joi.object({
+  name: Joi.string()
+    .min(2),
+  email: Joi.string().email().optional(),
+  phoneNumber: Joi.string().required(),
+  password: Joi.string().min(6),
+  roles: Joi.string().optional().default('staff')
+})
+
+var addExcerciseValidate = Joi.object({
+  title: Joi.string()
+    .min(2),
+  description: Joi.string().allow(''),
+  addedById: Joi.string().required(),
+})
+var addMeetingValidate = Joi.object({
+  participents: Joi.array().min(2),
+  excercise: Joi.array().empty(Joi.array().length(0)).default([]),
+})
+export {
+  loginValidate,
+  addUserValidate,
+  addStaffValidate,
+  addExcerciseValidate,
+  addMeetingValidate,
+}
