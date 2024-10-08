@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import UserModel from '../../src/model/user_model.mjs';
 import MeetingModel from '../model/conf_model.mjs';
 
@@ -17,26 +18,37 @@ async function updateExcerCiseStatus(req, res) {
 async function getMeetingInfo(req, res) {
   try {
     var id = req.params.id;
-
+    var meetingId = new mongoose.Types.ObjectId(id)
     var meetingCount = await MeetingModel.countDocuments({ _id: id })
     if (meetingCount > 0) {
       var response = await MeetingModel.aggregate([{
+
         $lookup: {
           from: 'users',
           localField: 'participents',
           foreignField: '_id',
           as: 'participents'
         }
-      }, 
-      { $unwind: '$excercise' }, 
+      },
       {
+        $match: {
+          "_id": meetingId
+        },
+      },
+      {
+        $unwind: { path: "$excercise", preserveNullAndEmptyArrays: true },
+      },
+      // Lookup to join with the exercise collection
+      {
+
         $lookup: {
-          from:'excercise',
-          localField:'excercise.excerciseId',
-          foreignField:'id',
-          as :'excercises',
+          from: "excercises", // Ensure this is the correct collection name
+          localField: "excercise.excerciseId",
+          foreignField: "_id",
+          as: "exerciseDetails"
         }
-      }])
+      },
+      ])
 
       if (response.length > 0) {
         return res.status(200).send({ message: 'message', data: response[0] })

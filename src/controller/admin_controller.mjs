@@ -114,7 +114,6 @@ async function addExcercise(req, res) {
       return res.status(400).send({ message: 'error in request', error: error })
     }
     var id = new mongoose.Types.ObjectId(value.addedById)
-    console.log(id);
 
     var checkIfAdmin = await UserModel.countDocuments({ roles: { $in: ["admin", "staff"] }, id: id })
     if (checkIfAdmin > 0) {
